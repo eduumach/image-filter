@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processador de Imagens</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Processador de Imagens</h1>
+        <p>Aplique filtros e transformações em suas imagens</p>
+    </header>
+
+    <main>
+        <form method="post" enctype="multipart/form-data" id="processForm">
+            <section class="upload-section">
+                <div class="upload-container">
+                    <div class="file-input-container">
+                        <input type="file" name="file" id="image-input" accept=".png,.jpg,.jpeg" required>
+                        <label for="image-input" class="file-input-label">
+                            <span class="upload-icon">&#x2B;</span>
+                            <span>Selecionar Imagem</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="image-preview">
+                <div class="preview-container">
+                    <div class="original-image">
+                        <h2>Imagem Original</h2>
+                        <div id="originalPreview" class="placeholder">
+                            <span>Nenhuma imagem selecionada</span>
+                        </div>
+                    </div>
+                    
+                    <div class="processed-image">
+                        <h2>Imagem Processada</h2>
+                        <div id="processedPreview" class="placeholder">
+                            <span>Aplique um filtro para ver o resultado</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="filters-section">
+                <h2>Filtros Disponíveis</h2>
+                <div class="filters-grid">
+                    <div class="filter-option">
+                        <input type="radio" name="filter" id="negative" value="negative" checked>
+                        <label for="negative">Negativo</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="radio" name="filter" id="median" value="median">
+                        <label for="median">Filtro Mediana</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="radio" name="filter" id="gaussian" value="gaussian">
+                        <label for="gaussian">Filtro Gaussiano</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="radio" name="filter" id="custom" value="custom">
+                        <label for="custom">Filtro Customizado</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="radio" name="filter" id="sobel" value="sobel">
+                        <label for="sobel">Filtro Sobel</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="radio" name="filter" id="prewitt" value="prewitt">
+                        <label for="prewitt">Filtro Prewitt</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="radio" name="filter" id="threshold" value="threshold">
+                        <label for="threshold">Limiarização</label>
+                    </div>
+                </div>
+                <button type="submit" class="apply-filter-button">Processar Imagem</button>
+            </section>
+        </form>
+    </main>
+
+    <footer>
+        <p>Desenvolvido para a disciplina de Computação Gráfica</p>
+    </footer>
+
+    <script>
+        document.getElementById('image-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const originalPreview = document.getElementById('originalPreview');
+                    originalPreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    originalPreview.classList.remove('placeholder');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('processForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Update processed image preview
+                const processedPreview = document.getElementById('processedPreview');
+                processedPreview.innerHTML = `<img src="${data.processed_image}" alt="Processed Image">`;
+                processedPreview.classList.remove('placeholder');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ocorreu um erro ao processar a imagem.');
+            }
+        });
+    </script>
+</body>
+</html>
